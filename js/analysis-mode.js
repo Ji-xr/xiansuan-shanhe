@@ -1,0 +1,1 @@
+const view=new URLSearchParams(location.search).get('view');document.documentElement.dataset.analysisView=['sensitivity','joint','matrix'].includes(view)?view:'sensitivity';

@@ -1,0 +1,2 @@
+import {PHOTOS} from './region-photos.js';
+export function scenarioPhotoStrip(){return Object.entries(PHOTOS).map(([id,p])=>`<figure data-photo="${id}"><img src="./assets/photos/${id}.jpg" alt="${p.alt}" width="960" height="720" loading="lazy"><figcaption>${p.name}<br>区域参考 · 非 DEM 节点<br><a href="${p.source}">${p.author}</a> · <a href="${p.licenseUrl}">${p.license}</a> · 裁切</figcaption></figure>`).join('');}

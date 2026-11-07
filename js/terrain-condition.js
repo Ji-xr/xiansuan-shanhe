@@ -1,0 +1,1 @@
+export function terrainDistanceComparison(distanceMeters,linkKm){if(!Number.isFinite(distanceMeters)||distanceMeters<0||!Number.isFinite(linkKm)||linkKm<0)return '距离信息不可用，无法自动核对。';const km=distanceMeters/1000;return Math.abs(km-linkKm)>.005?`距离不同：地形 ${km.toFixed(2)} km，链路 ${linkKm} km；不可将差异单独归因于环境。`:'地形与链路距离按显示精度接近；其他条件仍需核对。';}

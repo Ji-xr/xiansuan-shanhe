@@ -1,0 +1,9 @@
+import {calculateSystemEnergy} from './system-energy.js';
+import {createPowerPlan} from './power-config.js';
+/** Returns structured diagnostics; never returns a normal result for invalid inputs. */
+export function assessPower(input,radio){const errors=[],warnings=[],pending=[];let result=null;try{if(!['reference','custom'].includes(input.mode))throw new Error('设备模式无效');for(const k of ['targetDays','logicPeakMa','sensorPeakMa'])if(typeof input[k]!=='number'||!Number.isFinite(input[k])||input[k]<0)throw new Error(`${k} 必须是非负有限数`);if(input.mode==='reference'&&(input.logicV<1.65||input.logicV>3.6))throw new Error('STM32L072 VDD 超出 1.65–3.6 V 基本范围，BOR 等条件还需核实');if(input.mode==='reference'&&(input.sensorV<2.5||input.sensorV>3.6))throw new Error('EC-5 激励超出 2.5–3.6 V 范围');result=calculateSystemEnergy(createPowerPlan(input),radio);}catch(e){errors.push({level:'错误',cause:e.message,basis:'输入范围与时间/供电模型',action:'请修正输入'});return {errors,warnings,pending,result:null};}
+ if(result.days!==null&&result.days<input.targetDays)warnings.push({level:'警告',cause:`估算续航 ${result.days.toFixed(2)} 天低于目标 ${input.targetDays} 天`,basis:'用户输入目标',action:'复核周期、容量和电流'});
+ for(const [name,load,limit] of [['MCU/无线',input.mcuMa+input.txMa,input.logicPeakMa],['传感器',input.sensorMa,input.sensorPeakMa]])if(load>limit)warnings.push({level:'警告',cause:`${name} 并发负载 ${load} mA 超过输入峰值能力 ${limit} mA`,basis:'用户输入的支路峰值能力',action:'核对电源及启动瞬态'});
+ if(result.days!==null&&result.days>1000)warnings.push({level:'警告',cause:`估算寿命 ${result.days.toFixed(0)} 天较长`,basis:'仅用于提示模型时间尺度，不是器件寿命门限',action:'考虑电池老化、自放电及实际工作电流'});
+ for(const [cause,action] of [['低温下有效容量未知','测试电池在部署温度的有效容量'],['稳压器静态电流为假设','核对电池输入端静态电流及效率测量条件'],['状态切换时间为假设','按实际硬件测量'],['通信重传未计入','按应用协议和实测数据评估']])pending.push({level:'待验证',cause,basis:'当前未提供实测或产品条件',action});
+ return {errors,warnings,pending,result};}

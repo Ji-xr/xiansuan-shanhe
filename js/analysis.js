@@ -1,0 +1,12 @@
+// 控制变量扫描：每个点调用阶段 1 的同一套链路与功耗函数。
+import {link,energy,classify} from './model.js';
+export const AXES=Object.freeze({sf:{label:'扩频因子 SF',unit:'',values:[7,8,9,10,11,12]},distance:{label:'通信距离',unit:'km',values:[.1,...Array.from({length:20},(_,i)=>i+1)]},power:{label:'发射功率',unit:'dBm',values:Array.from({length:19},(_,i)=>i+2)},bw:{label:'带宽',unit:'kHz',values:[125,250,500]}});
+export const METRICS=Object.freeze({sensitivity:{label:'接收灵敏度',unit:'dBm',digits:2},received:{label:'预计接收功率',unit:'dBm',digits:2},margin:{label:'链路余量',unit:'dB',digits:2},toa:{label:'数据包发送时间',unit:'ms',digits:3},current:{label:'平均电流（周期休眠）',unit:'mA',digits:5},days:{label:'理论续航估算',unit:'天',digits:2}});
+export function point(params){const radio=link(params),power=energy(params);return {sensitivity:radio.sensitivity,received:radio.received,margin:radio.margin,toa:power.toa*1000,current:power.periodic,days:power.periodicDays};}
+export function sweep(base,axis){if(!Object.hasOwn(AXES,axis))throw new RangeError('不支持的分析参数');point(base);const values=[...new Set([...AXES[axis].values,base[axis]])].sort((a,b)=>a-b);return values.map(value=>({value,params:{...base,[axis]:value},...point({...base,[axis]:value})}));}
+export function joint(base){return sweep(base,'sf').map(row=>({...row,meets:row.margin>=base.threshold}));}
+export const GRID_DISTANCES=Object.freeze([.1,2,4,6,8,10,12,14,16,18,20]);
+export function sfDistanceGrid(base){point(base);const distances=[...GRID_DISTANCES];return {distances,rows:AXES.sf.values.map(sf=>({sf,cells:distances.map(distance=>({distance,...point({...base,sf,distance})}))}))};}
+export function gridBand(margin,threshold){const risk=classify(margin,threshold).risk;return risk==='高'?'insufficient':risk==='中'?'low':'sufficient';}
+export function gridSelection(base,sf,distance){if(!AXES.sf.values.includes(sf)||!GRID_DISTANCES.includes(distance))throw new RangeError('所选网格位置无效');const params={...base,sf,distance};const radio=link(params);energy(params);return {params,radio};}
+export function jointConclusion(rows){const a=rows.find(row=>row.value===9),b=rows.find(row=>row.value===12);if(!a||!b)throw new Error('缺少 SF9 或 SF12 数据');const d=b.margin-a.margin,ratio=b.toa/a.toa,days=value=>value===null?'无法估算':`${value.toFixed(2)} 天`;return `当前模型条件下，SF12 相比 SF9 的链路余量变化 ${d>=0?'+':''}${d.toFixed(2)} dB；发送时间为 ${ratio.toFixed(2)} 倍；理论续航 ${days(a.days)} → ${days(b.days)}。电流参数保持不变；上述结果非实测，不代表真实可靠性。`;}

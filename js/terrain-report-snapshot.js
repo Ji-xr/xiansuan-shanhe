@@ -1,0 +1,4 @@
+export const TERRAIN_REPORT_KEY='longyuan-lora.terrain-report.v1';
+export function clearTerrainReport(storage){try{storage.removeItem(TERRAIN_REPORT_KEY)}catch{}}
+export function saveTerrainReport(storage,data){try{clearTerrainReport(storage);if(!data?.caseTime||!Array.isArray(data.rows)||data.rows.length<3||data.rows.length>12000)throw Error('剖面点数不适合保存');storage.setItem(TERRAIN_REPORT_KEY,JSON.stringify({version:1,...data}));return true}catch{return false}}
+export function readTerrainReport(storage,caseView){try{if(!caseView)return null;const v=JSON.parse(storage.getItem(TERRAIN_REPORT_KEY));if(!v||v.version!==1||v.caseTime!==caseView.time||!Array.isArray(v.rows)||v.rows.length<3||v.rows.length>12000||!v.rows.every(r=>['distance','terrain','line','upper','lower'].every(k=>Number.isFinite(r[k]))))return null;return v}catch{return null}}
