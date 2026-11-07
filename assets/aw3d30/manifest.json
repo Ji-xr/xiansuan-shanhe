@@ -1,0 +1,58 @@
+{
+  "hexi": {
+    "width": 382,
+    "height": 256,
+    "originX": 98.20458333333333,
+    "originY": 39.830416666666665,
+    "stepX": 0.0002777777777777778,
+    "stepY": -0.0002777777777777778,
+    "crs": "EPSG:4326",
+    "verticalDatum": "EGM96",
+    "unit": "m",
+    "noData": -9999,
+    "bbox": [
+      98,
+      39,
+      99,
+      40
+    ],
+    "window": [
+      736,
+      610,
+      1118,
+      866
+    ],
+    "item": "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/2021-02/3/E098.00-E099.00/N39.00-N40.00.json",
+    "dsm": "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/2021-02/3/E098.00-E099.00/E098.00-N39.00-E099.00-N40.00-DSM.tiff",
+    "msk": "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/2021-02/3/E098.00-E099.00/E098.00-N39.00-E099.00-N40.00-MSK.tiff",
+    "sha256": "defea711e28bd9921c807968ee540074e3f597781512a21deefdc048e54757c9"
+  },
+  "yellow": {
+    "width": 220,
+    "height": 166,
+    "originX": 103.30958333333332,
+    "originY": 35.955416666666665,
+    "stepX": 0.0002777777777777778,
+    "stepY": -0.0002777777777777778,
+    "crs": "EPSG:4326",
+    "verticalDatum": "EGM96",
+    "unit": "m",
+    "noData": -9999,
+    "bbox": [
+      103,
+      35,
+      104,
+      36
+    ],
+    "window": [
+      1114,
+      160,
+      1334,
+      326
+    ],
+    "item": "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/2021-02/3/E103.00-E104.00/N35.00-N36.00.json",
+    "dsm": "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/2021-02/3/E103.00-E104.00/E103.00-N35.00-E104.00-N36.00-DSM.tiff",
+    "msk": "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/2021-02/3/E103.00-E104.00/E103.00-N35.00-E104.00-N36.00-MSK.tiff",
+    "sha256": "a6cb1a547439388b61b7ba3540f8771c65f9de650107650434b74dcd33c245f7"
+  }
+}

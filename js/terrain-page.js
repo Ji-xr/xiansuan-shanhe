@@ -13,6 +13,7 @@ import { createDebouncedCalculation } from "./debounce-calculation.js";
 const profileCache = createProfileCache();
 import { analyzeTerrainRadio } from "./terrain-radio.js";
 import { EXAMPLES, VERIFIED_DEMO_ROUTES } from "./terrain-examples.js";
+import { compareOriginalRoute, loadCrossCheckRaster } from "./terrain-cross-check.js";
 const $ = (s) => document.querySelector(s),
   root = $("#terrain-app");
 root.innerHTML = `<h1>地形高程剖面</h1><p>DEM 剖面与几何净空 · 非实测</p><div class="terrain-modes"><button type="button" data-mode="quick">快速体验 · 内置 DSM</button><button type="button" data-mode="upload">专业分析 · 上传 GeoTIFF</button></div><p id="terrain-mode" class="badge"></p><p id="terrain-status" role="status"></p><button type="button" id="cancel-load" hidden>取消加载</button><div class="terrain-layout"><div><section><h2>填入相关数据</h2><div id="quick-import"><div class="scenario-select"><label>场景<select id="example"><option value="" selected disabled>请选择场景</option><option value="qilian">祁连山</option><option value="hexi">河西走廊·嘉峪关</option><option value="yellow">黄河上游·永靖刘家峡</option></select></label><button type="button" id="load-example">填入相关数据</button></div><div id="demo-routes" hidden><p>此案例默认使用通过地形质量核验的演示线路。</p><button type="button" id="original-route">查看原线路</button> <button type="button" id="verified-route">恢复核验线路</button></div><div class="terrain-examples" aria-label="区域实景参考">${scenarioPhotoStrip()}</div><p class="footnote">区域实景参考，非节点位置，不参与计算。</p></div><div id="upload-import" hidden><label>选择本地 GeoTIFF<input type="file" id="file" accept=".tif,.tiff,image/tiff"></label><label>数据来源（用户填写）<input id="source" placeholder="数据集名称及版本"></label><label>数据类型<select id="dataType"><option value="未知">未知</option><option value="DSM">DSM</option><option value="DTM">DTM</option></select></label><label>垂直高程基准（文件未标注时由用户填写）<input id="datum" placeholder="请按数据说明填写，不得猜测"></label><label>高程单位（文件未标注时）<select id="unit"><option value="">未知</option><option value="m">米（m）</option></select></label><button type="button" id="load-file">读取文件</button><p class="footnote">文件仅在当前页面内存中；刷新后需重新选择。内部掩膜不支持；外部掩膜须先写入 NoData。</p></div><div id="metadata"></div></section><section><h2>节点与参数</h2><form id="terrain-form" class="form-grid" novalidate><label>起点经度 °<input type="number" step="any" name="lonA" required></label><label>起点纬度 °<input type="number" step="any" name="latA" required></label><label>起点天线离地高度 m<input type="number" min="0" step="any" name="heightA" required></label><label>终点经度 °<input type="number" step="any" name="lonB" required></label><label>终点纬度 °<input type="number" step="any" name="latB" required></label><label>终点天线离地高度 m<input type="number" min="0" step="any" name="heightB" required></label><label>采样间距 m<input type="number" min="0.01" step="any" name="spacing" required></label></form><h3>无线链路分析</h3><div class="form-grid"><label>载波频率 MHz<input id="radio-frequency" type="number" min="100" max="10000" step="any" value="868"></label><label>菲涅尔净空参考 %<input id="radio-ratio" type="number" min="0" max="100" step="any" value="60"></label><label>地球曲率与折射<select id="radio-curvature"><option value="flat">平面近似（不含曲率）</option><option value="earth">地球曲率（k=1，无折射）</option><option value="refracted" selected>等效地球半径（k=4/3，标准折射假设）</option></select></label></div><label class="quality-check"><input id="quality-confirm" type="checkbox"> 我已依据数据资料核实 NoData、外部掩膜和垂直基准；此确认不消除 DEM 分辨率及采样局限。</label><button type="button" id="analyse" hidden>重新尝试</button></section></div><div><section><h2>地形与无线链路分析</h2><p id="terrain-understanding" class="result-understanding"></p><p id="radio-results" aria-live="polite"></p><div id="terrain-location" class="terrain-location"><h3>位置与高程</h3><p>尚无有效地形计算。</p></div><p id="result" aria-live="polite">请选择场景或地形数据。</p><div id="terrain-plot" hidden><div class="terrain-legend" aria-label="地形图例"><button type="button" data-series="0" aria-pressed="true"><i class="line-ground"></i>地形（含曲率凸起）m</button><button type="button" data-series="1" aria-pressed="true"><i class="line-sight"></i>天线视线 m</button><button type="button" data-series="2" aria-pressed="true"><i class="line-fresnel"></i>第一菲涅尔区上边界</button><button type="button" data-series="3" aria-pressed="true"><i class="line-fresnel"></i>第一菲涅尔区下边界</button><button type="button" data-series="4" aria-pressed="true"><i class="dot-antenna"></i>天线顶部</button><button type="button" data-series="5" aria-pressed="true"><i class="dot-obstacle"></i>最小视线净空位置</button></div><div class="chart-wrap"><p id="plot-stale" class="plot-stale" hidden aria-hidden="true"></p><canvas id="terrain-chart" role="img" aria-label="由 DEM 栅格计算的距离高程剖面"></canvas></div></div></section><section class="terrain-method-link"><p>中心线几何分析 · 非现场可靠性</p><details><summary>查看计算依据与限制</summary><p>采用 DEM 中心线采样及等效地球半径近似，结果不代表完整三维障碍或实地通信可靠性。数据来源、精度和完整公式见模型与方法。</p></details></section></div></div>`;
@@ -563,9 +564,15 @@ async function loadExample(id) {
     if (seq !== exampleSequence) return;
     const ok = await load(blob, ex, "quick", () => seq === exampleSequence);
     if (ok && mode === "quick") {
-      try { data.quick.qualityMask = await loadQualityMask(id, blob, data.quick, exampleAbort.signal); }
-      catch (error) { if (seq !== exampleSequence) return; data.quick.qualityMask = null; data.quick.qualityError = "质量掩膜未验证：" + error.message + "；请检查文件后重试。"; }
+      const raster = data.quick;
+      const [quality, alternate] = await Promise.allSettled([
+        loadQualityMask(id, blob, raster, signal),
+        loadCrossCheckRaster(id, signal),
+      ]);
       if (seq !== exampleSequence || mode !== "quick") return;
+      raster.qualityMask = quality.status === "fulfilled" ? quality.value : null;
+      if (quality.status === "rejected") raster.qualityError = "质量掩膜未验证：" + quality.reason.message + "；请检查文件后重试。";
+      raster.alternate = alternate.status === "fulfilled" ? alternate.value : null;
       const saved = routeCache[id];
       if (!preserveRoute) {
         if (
@@ -686,7 +693,8 @@ function calculate() {
       },
       a = { lon: get("lonA"), lat: get("latA"), antenna: get("heightA") },
       b = { lon: get("lonB"), lat: get("latB"), antenna: get("heightB") };
-    let p = profileCache.profile(r, a, b, get("spacing"));
+    const spacing = get("spacing");
+    const p = profileCache.profile(r, a, b, spacing);
     const freq = $("#radio-frequency"),
       ratio = $("#radio-ratio");
     if (
@@ -698,13 +706,16 @@ function calculate() {
       throw Error("请检查载波频率和净空比例");
     const routeQuality = mode === "quick" ? checkRouteQuality(r, p, r.qualityMask) : null;
     if (routeQuality?.invalid) throw Error(routeQuality.reason);
-    const q = analyzeTerrainRadio({
-      profile: p,
+    const options = {
       heightA: a.antenna,
       heightB: b.antenna,
       frequencyMHz: Number(freq.value),
       clearanceRatio: Number(ratio.value) / 100,
       curvature: $("#radio-curvature").value,
+    };
+    const q = analyzeTerrainRadio({
+      ...options,
+      profile: p,
       quality: {
         validPixelsConfirmed:
           mode === "quick" ? routeQuality.valid : (r.noData !== null && $("#quality-confirm").checked),
@@ -713,6 +724,14 @@ function calculate() {
         maxGapMeters: p.distance / (p.points.length - 1) + 1e-6,
       },
     });
+    const comparison = mode === "quick" ? compareOriginalRoute({
+      id: activeExample, a, b, spacing, raster: r, profile: p, radio: q, options, alternate: r.alternate,
+    }) : null;
+    if (comparison) {
+      q.geometricStatus = comparison.geometricStatus;
+      q.fresnelStatus = comparison.fresnelStatus;
+      q.qualityNote = comparison.qualityNote;
+    }
     if (typeof Chart === "undefined") throw Error("图表库加载失败");
     if (chart) chart.destroy();
     $("#terrain-plot").hidden = false;
@@ -722,7 +741,9 @@ function calculate() {
       .querySelectorAll("[data-series]")
       .forEach((b) => b.setAttribute("aria-pressed", "true"));
     const points = (fn) => q.rows.map((x) => ({ x: x.distance, y: fn(x) }));
-    const obstacle = q.rows.find((x) => x.distance === q.obstructionLocation);
+    const obstacle = comparison ? comparison.obstruction : q.rows.find((x) => x.distance === q.obstructionLocation);
+    const obstructionLabel = comparison ? "Copernicus 已核验受限点" : "最小视线净空位置";
+    $('[data-series="5"]').lastChild.textContent = obstructionLabel;
     chart = new Chart($("#terrain-chart"), {
       type: "line",
       data: {
@@ -766,8 +787,8 @@ function calculate() {
             backgroundColor: "#b87925",
           },
           {
-            label: "最小视线净空位置",
-            data: [{ x: obstacle.distance, y: obstacle.terrain }],
+            label: obstructionLabel,
+            data: obstacle ? [{ x: obstacle.distance, y: obstacle.terrain }] : [],
             showLine: false,
             pointRadius: 5,
             backgroundColor: "#ad3d2c",
@@ -788,8 +809,9 @@ function calculate() {
     });
     $("#result").textContent =
       `${mode === "quick" ? "快速体验" : "专业分析"}｜总距离 ${p.distance.toFixed(2)} m，${p.points.length} 个采样点；起点地面 ${p.points[0].elevation.toFixed(2)} m、天线离地 ${a.antenna} m；终点地面 ${p.points.at(-1).elevation.toFixed(2)} m、天线离地 ${b.antenna} m。来源 ${r.source}，${r.dataType}，${r.verticalDatum}。`;
-    $("#radio-results").textContent =
-      `几何通视：${q.geometricStatus}；菲涅尔净空：${q.fresnelStatus}。采样点最小视线净空 ${q.minClearance.toFixed(2)} m，位置距起点 ${q.obstructionLocation.toFixed(1)} m；最大遮挡深度 ${q.maxObstruction.toFixed(2)} m。第一菲涅尔区最大侵入 ${q.maxFresnelIntrusion.toFixed(2)} m，位置 ${q.maxFresnelIntrusionLocation.toFixed(1)} m；最不利净空相对所需比例的差值 ${q.worstFresnel.toFixed(2)} m，位置 ${q.worstFresnelLocation.toFixed(1)} m。载波 ${q.frequencyMHz} MHz；参考比例 ${(q.clearanceRatio * 100).toFixed(0)}%；曲率 ${q.k === null ? "平面" : `k=${q.k.toFixed(3)}`}。${q.qualitySufficient ? "采样结果仅供设计参考。" : "像元有效性或高程基准待核实，数值仅供条件分析。"}`;
+    $("#radio-results").textContent = comparison
+      ? `几何通视 ${q.geometricStatus}。菲涅尔净空 ${q.fresnelStatus}。${q.qualityNote}`
+      : `几何通视：${q.geometricStatus}；菲涅尔净空：${q.fresnelStatus}。采样点最小视线净空 ${q.minClearance.toFixed(2)} m，位置距起点 ${q.obstructionLocation.toFixed(1)} m；最大遮挡深度 ${q.maxObstruction.toFixed(2)} m。第一菲涅尔区最大侵入 ${q.maxFresnelIntrusion.toFixed(2)} m，位置 ${q.maxFresnelIntrusionLocation.toFixed(1)} m；最不利净空相对所需比例的差值 ${q.worstFresnel.toFixed(2)} m，位置 ${q.worstFresnelLocation.toFixed(1)} m。载波 ${q.frequencyMHz} MHz；参考比例 ${(q.clearanceRatio * 100).toFixed(0)}%；曲率 ${q.k === null ? "平面" : `k=${q.k.toFixed(3)}`}。${q.qualitySufficient ? "采样结果仅供设计参考。" : "像元有效性或高程基准待核实，数值仅供条件分析。"}`;
     const cv = buildCaseView({
       mode,
       id: $("#example").value,
@@ -817,7 +839,8 @@ function calculate() {
     terrainDirty = false;
     $("#terrain-understanding").textContent = "";
     $("#analyse").hidden = true;
-    if (q.qualitySufficient) showSuccessNotice();
+    if (comparison) { clearSuccessNotice(); $("#terrain-status").textContent = ""; }
+    else if (q.qualitySufficient) showSuccessNotice();
     else { clearSuccessNotice(); $("#terrain-status").textContent = mode === "quick" ? (r.qualityError || routeQuality.reason) : (r.noData === null ? "NoData 未声明：无法确认部分高程像元有效性，请核验数据来源。" : "质量掩膜未验证：请核实外部掩膜与高程基准。"); }
   } catch (e) {
     clearCase();
