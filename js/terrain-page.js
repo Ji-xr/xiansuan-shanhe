@@ -16,7 +16,7 @@ import { EXAMPLES, VERIFIED_DEMO_ROUTES } from "./terrain-examples.js";
 import { compareOriginalRoute, loadCrossCheckRaster } from "./terrain-cross-check.js";
 const $ = (s) => document.querySelector(s),
   root = $("#terrain-app");
-root.innerHTML = `<h1>地形高程剖面</h1><p>DEM 剖面与几何净空 · 非实测</p><div class="terrain-modes"><button type="button" data-mode="quick">快速体验 · 内置 DSM</button><button type="button" data-mode="upload">专业分析 · 上传 GeoTIFF</button></div><p id="terrain-mode" class="badge"></p><p id="terrain-status" role="status"></p><button type="button" id="cancel-load" hidden>取消加载</button><div class="terrain-layout"><div><section><h2>填入相关数据</h2><div id="quick-import"><div class="scenario-select"><label>场景<select id="example"><option value="" selected disabled>请选择场景</option><option value="qilian">祁连山</option><option value="hexi">河西走廊·嘉峪关</option><option value="yellow">黄河上游·永靖刘家峡</option></select></label><button type="button" id="load-example">填入相关数据</button></div><div id="demo-routes" hidden><p>此案例默认使用通过地形质量核验的演示线路。</p><button type="button" id="original-route">查看原线路</button> <button type="button" id="verified-route">恢复核验线路</button></div><div class="terrain-examples" aria-label="区域实景参考">${scenarioPhotoStrip()}</div><p class="footnote">区域实景参考，非节点位置，不参与计算。</p></div><div id="upload-import" hidden><label>选择本地 GeoTIFF<input type="file" id="file" accept=".tif,.tiff,image/tiff"></label><label>数据来源（用户填写）<input id="source" placeholder="数据集名称及版本"></label><label>数据类型<select id="dataType"><option value="未知">未知</option><option value="DSM">DSM</option><option value="DTM">DTM</option></select></label><label>垂直高程基准（文件未标注时由用户填写）<input id="datum" placeholder="请按数据说明填写，不得猜测"></label><label>高程单位（文件未标注时）<select id="unit"><option value="">未知</option><option value="m">米（m）</option></select></label><button type="button" id="load-file">读取文件</button><p class="footnote">文件仅在当前页面内存中；刷新后需重新选择。内部掩膜不支持；外部掩膜须先写入 NoData。</p></div><div id="metadata"></div></section><section><h2>节点与参数</h2><form id="terrain-form" class="form-grid" novalidate><label>起点经度 °<input type="number" step="any" name="lonA" required></label><label>起点纬度 °<input type="number" step="any" name="latA" required></label><label>起点天线离地高度 m<input type="number" min="0" step="any" name="heightA" required></label><label>终点经度 °<input type="number" step="any" name="lonB" required></label><label>终点纬度 °<input type="number" step="any" name="latB" required></label><label>终点天线离地高度 m<input type="number" min="0" step="any" name="heightB" required></label><label>采样间距 m<input type="number" min="0.01" step="any" name="spacing" required></label></form><h3>无线链路分析</h3><div class="form-grid"><label>载波频率 MHz<input id="radio-frequency" type="number" min="100" max="10000" step="any" value="868"></label><label>菲涅尔净空参考 %<input id="radio-ratio" type="number" min="0" max="100" step="any" value="60"></label><label>地球曲率与折射<select id="radio-curvature"><option value="flat">平面近似（不含曲率）</option><option value="earth">地球曲率（k=1，无折射）</option><option value="refracted" selected>等效地球半径（k=4/3，标准折射假设）</option></select></label></div><label class="quality-check"><input id="quality-confirm" type="checkbox"> 我已依据数据资料核实 NoData、外部掩膜和垂直基准；此确认不消除 DEM 分辨率及采样局限。</label><button type="button" id="analyse" hidden>重新尝试</button></section></div><div><section><h2>地形与无线链路分析</h2><p id="terrain-understanding" class="result-understanding"></p><p id="radio-results" aria-live="polite"></p><div id="terrain-location" class="terrain-location"><h3>位置与高程</h3><p>尚无有效地形计算。</p></div><p id="result" aria-live="polite">请选择场景或地形数据。</p><div id="terrain-plot" hidden><div class="terrain-legend" aria-label="地形图例"><button type="button" data-series="0" aria-pressed="true"><i class="line-ground"></i>地形（含曲率凸起）m</button><button type="button" data-series="1" aria-pressed="true"><i class="line-sight"></i>天线视线 m</button><button type="button" data-series="2" aria-pressed="true"><i class="line-fresnel"></i>第一菲涅尔区上边界</button><button type="button" data-series="3" aria-pressed="true"><i class="line-fresnel"></i>第一菲涅尔区下边界</button><button type="button" data-series="4" aria-pressed="true"><i class="dot-antenna"></i>天线顶部</button><button type="button" data-series="5" aria-pressed="true"><i class="dot-obstacle"></i>最小视线净空位置</button></div><div class="chart-wrap"><p id="plot-stale" class="plot-stale" hidden aria-hidden="true"></p><canvas id="terrain-chart" role="img" aria-label="由 DEM 栅格计算的距离高程剖面"></canvas></div></div></section><section class="terrain-method-link"><p>中心线几何分析 · 非现场可靠性</p><details><summary>查看计算依据与限制</summary><p>采用 DEM 中心线采样及等效地球半径近似，结果不代表完整三维障碍或实地通信可靠性。数据来源、精度和完整公式见模型与方法。</p></details></section></div></div>`;
+root.innerHTML = `<h1>地形高程剖面</h1><p>DEM 剖面与几何净空 · 非实测</p><div class="terrain-modes"><button type="button" data-mode="quick">快速体验 · 内置 DSM</button><button type="button" data-mode="upload">专业分析 · 上传 GeoTIFF</button></div><p id="terrain-mode" class="badge"></p><p id="terrain-status" role="status"></p><button type="button" id="cancel-load" hidden>取消加载</button><div class="terrain-layout"><div><section><h2>填入相关数据</h2><div id="quick-import"><div class="scenario-select"><label>场景<select id="example"><option value="" selected disabled>请选择场景</option><option value="qilian">祁连山</option><option value="hexi">河西走廊·嘉峪关</option><option value="yellow">黄河上游·永靖刘家峡</option></select></label><button type="button" id="load-example">填入相关数据</button></div><div id="demo-routes" hidden><p id="demo-route-hint" hidden>此案例默认使用通过地形质量核验的演示线路。</p><button type="button" id="original-route" hidden>查看原线路</button> <button type="button" id="verified-route">恢复场景默认线路</button></div><div class="terrain-examples" aria-label="区域实景参考">${scenarioPhotoStrip()}</div><p class="footnote">区域实景参考，非节点位置，不参与计算。</p></div><div id="upload-import" hidden><label>选择本地 GeoTIFF<input type="file" id="file" accept=".tif,.tiff,image/tiff"></label><label>数据来源（用户填写）<input id="source" placeholder="数据集名称及版本"></label><label>数据类型<select id="dataType"><option value="未知">未知</option><option value="DSM">DSM</option><option value="DTM">DTM</option></select></label><label>垂直高程基准（文件未标注时由用户填写）<input id="datum" placeholder="请按数据说明填写，不得猜测"></label><label>高程单位（文件未标注时）<select id="unit"><option value="">未知</option><option value="m">米（m）</option></select></label><button type="button" id="load-file">读取文件</button><p class="footnote">文件仅在当前页面内存中；刷新后需重新选择。内部掩膜不支持；外部掩膜须先写入 NoData。</p></div><div id="metadata"></div></section><section><h2>节点与参数</h2><form id="terrain-form" class="form-grid" novalidate><label>起点经度 °<input type="number" step="any" name="lonA" required></label><label>起点纬度 °<input type="number" step="any" name="latA" required></label><label>起点天线离地高度 m<input type="number" min="0" step="any" name="heightA" required></label><label>终点经度 °<input type="number" step="any" name="lonB" required></label><label>终点纬度 °<input type="number" step="any" name="latB" required></label><label>终点天线离地高度 m<input type="number" min="0" step="any" name="heightB" required></label><label>采样间距 m<input type="number" min="0.01" step="any" name="spacing" required></label></form><h3>无线链路分析</h3><div class="form-grid"><label>载波频率 MHz<input id="radio-frequency" type="number" min="100" max="10000" step="any" value="868"></label><label>菲涅尔净空参考 %<input id="radio-ratio" type="number" min="0" max="100" step="any" value="60"></label><label>地球曲率与折射<select id="radio-curvature"><option value="flat">平面近似（不含曲率）</option><option value="earth">地球曲率（k=1，无折射）</option><option value="refracted" selected>等效地球半径（k=4/3，标准折射假设）</option></select></label></div><label class="quality-check"><input id="quality-confirm" type="checkbox"> 我已依据数据资料核实 NoData、外部掩膜和垂直基准；此确认不消除 DEM 分辨率及采样局限。</label><button type="button" id="analyse" hidden>重新尝试</button></section></div><div><section><h2>地形与无线链路分析</h2><p id="terrain-understanding" class="result-understanding"></p><p id="radio-results" aria-live="polite"></p><div id="terrain-location" class="terrain-location"><h3>位置与高程</h3><p>尚无有效地形计算。</p></div><p id="result" aria-live="polite">请选择场景或地形数据。</p><div id="terrain-plot" hidden><div class="terrain-legend" aria-label="地形图例"><button type="button" data-series="0" aria-pressed="true"><i class="line-ground"></i>地形（含曲率凸起）m</button><button type="button" data-series="1" aria-pressed="true"><i class="line-sight"></i>天线视线 m</button><button type="button" data-series="2" aria-pressed="true"><i class="line-fresnel"></i>第一菲涅尔区上边界</button><button type="button" data-series="3" aria-pressed="true"><i class="line-fresnel"></i>第一菲涅尔区下边界</button><button type="button" data-series="4" aria-pressed="true"><i class="dot-antenna"></i>天线顶部</button><button type="button" data-series="5" aria-pressed="true"><i class="dot-obstacle"></i>最小视线净空位置</button></div><div class="chart-wrap"><p id="plot-stale" class="plot-stale" hidden aria-hidden="true"></p><canvas id="terrain-chart" role="img" aria-label="由 DEM 栅格计算的距离高程剖面"></canvas></div></div></section><section class="terrain-method-link"><p>中心线几何分析 · 非现场可靠性</p><details><summary>查看计算依据与限制</summary><p>采用 DEM 中心线采样及等效地球半径近似，结果不代表完整三维障碍或实地通信可靠性。数据来源、精度和完整公式见模型与方法。</p></details></section></div></div>`;
 for (const [value, text] of [
   ["dingxi", "定西·陇中黄土丘陵沟壑区"],
   ["maqu", "玛曲·高寒草甸"],
@@ -152,7 +152,11 @@ function markCards() {
   const button = $("#load-example");
   button.disabled = loadingExample;
   button.textContent = loadingExample ? "正在加载…" : "填入相关数据";
-  $("#demo-routes").hidden = loadingExample || !data.quick || !Object.hasOwn(VERIFIED_DEMO_ROUTES, activeExample);
+  const hasVerifiedRoute = Object.hasOwn(VERIFIED_DEMO_ROUTES, activeExample);
+  $("#demo-routes").hidden = loadingExample || !data.quick || !activeExample;
+  $("#demo-route-hint").hidden = !hasVerifiedRoute;
+  $("#original-route").hidden = !hasVerifiedRoute;
+  $("#verified-route").textContent = hasVerifiedRoute ? "恢复核验线路" : "恢复场景默认线路";
 }
 let mode = "quick",
   states = {
@@ -257,6 +261,7 @@ function cancelLoad() {
 $("#cancel-load").addEventListener("click", () => {
   cancelLoad();
   data[mode] = null;
+  markCards();
   clearPlot();
   clearCase();
   showMetadata();
@@ -295,6 +300,25 @@ function restore() {
   showQualityState();
   clearPlot();
 }
+function rasterRangeText(raster) {
+  const lastLon = raster.originX + raster.stepX * (raster.width - 1);
+  const lastLat = raster.originY + raster.stepY * (raster.height - 1);
+  const range = (a, b) => `${Math.min(a, b).toFixed(6)}–${Math.max(a, b).toFixed(6)}°`;
+  return `经度 ${range(raster.originX, lastLon)}，纬度 ${range(raster.originY, lastLat)}`;
+}
+
+function outsideRasterMessage(raster, inputs) {
+  const names = [];
+  for (const [name, lon, lat] of [["起点", inputs.lonA, inputs.latA], ["终点", inputs.lonB, inputs.latB]]) {
+    const column = (Number(lon) - raster.originX) / raster.stepX;
+    const row = (Number(lat) - raster.originY) / raster.stepY;
+    const tolerance = 1e-9;
+    if (column < -tolerance || column > raster.width - 1 + tolerance || row < -tolerance || row > raster.height - 1 + tolerance) names.push(name);
+  }
+  const remedy = mode === "quick" ? "可调整节点或恢复默认线路。" : "请调整节点或上传同时覆盖两端的 GeoTIFF。";
+  return `${names.join("和") || "当前线路"}超出 DEM 覆盖范围。当前栅格范围约为 ${rasterRangeText(raster)}。${remedy}`;
+}
+
 function showMetadata() {
   const r = data[mode],
     out = $("#metadata");
@@ -304,15 +328,13 @@ function showMetadata() {
     showQualityState();
     return;
   }
-  const x = r.originX + r.stepX * (r.width - 1),
-    y = r.originY + r.stepY * (r.height - 1);
   const brief = document.createElement("p");
   brief.textContent = `来源：${r.source}；${r.dataType}；${r.crs}；垂直基准 ${r.verticalDatum}。${r.noData === null ? (mode === "quick" && r.qualityMask ? "NoData 未声明；当前线路有效性以质量核验为准。" : "NoData 未声明，像元有效性未知。") : `NoData：${r.noData}。`}`;
   const details = document.createElement("details"),
     summary = document.createElement("summary"),
     full = document.createElement("p");
   summary.textContent = "查看栅格元数据";
-  full.textContent = `版本：${r.version}；大小：${r.width} × ${r.height} 像元；有效采样范围：经度 ${Math.min(x, r.originX).toFixed(6)}–${Math.max(x, r.originX).toFixed(6)}，纬度 ${Math.min(y, r.originY).toFixed(6)}–${Math.max(y, r.originY).toFixed(6)}；分辨率：${Math.abs(r.stepX)}° × ${Math.abs(r.stepY)}°；垂直基准来源：${r.verticalSource}；单位 ${r.unit}；${r.rasterType}。${r.qualitySummary || "请按数据说明核对外部掩膜与高程基准。"}${r.licenseNotice ? `；许可声明：${r.licenseNotice}` : ""}`;
+  full.textContent = `版本：${r.version}；大小：${r.width} × ${r.height} 像元；有效采样范围：${rasterRangeText(r)}；分辨率：${Math.abs(r.stepX)}° × ${Math.abs(r.stepY)}°；垂直基准来源：${r.verticalSource}；单位 ${r.unit}；${r.rasterType}。${r.qualitySummary || "请按数据说明核对外部掩膜与高程基准。"}${r.licenseNotice ? `；许可声明：${r.licenseNotice}` : ""}`;
   details.append(summary, full);
   out.append(brief, details);
   showQualityState();
@@ -640,9 +662,10 @@ $("#load-example").addEventListener("click", () =>
   loadExample($("#example").value),
 );
 function chooseDemoRoute(useOriginal) {
-  const verified = VERIFIED_DEMO_ROUTES[activeExample];
-  if (!verified || !data.quick || loadingExample) return;
-  Object.assign(states.quick, routeFields(useOriginal ? EXAMPLES[activeExample] : verified));
+  const example = EXAMPLES[activeExample];
+  if (!example || !data.quick || loadingExample) return;
+  const route = useOriginal ? example : (VERIFIED_DEMO_ROUTES[activeExample] ?? example);
+  Object.assign(states.quick, routeFields(route));
   quickEdited = useOriginal;
   restore();
   saveScenario();
@@ -680,8 +703,8 @@ $("#example").addEventListener("change", () => {
 markCards();
 function calculate() {
   capture();
+  const r = data[mode];
   try {
-    const r = data[mode];
     if (!r) throw Error("请先读取当前模式的数据");
     if (mode === "quick" && $("#example").value !== activeExample)
       throw Error("请先填入所选场景的数据");
@@ -845,7 +868,7 @@ function calculate() {
   } catch (e) {
     clearCase();
     clearPlot();
-    $("#result").textContent = /超出栅格/.test(e.message) ? "当前线路超出 DEM 覆盖范围，请调整节点。" : /NoData|无效高程|缺测数据/.test(e.message) ? "当前剖面包含缺测数据，请调整线路或更换数据。" : "计算未完成，请检查输入：" + e.message;
+    $("#result").textContent = /超出栅格/.test(e.message) && r ? outsideRasterMessage(r, states[mode]) : /NoData|无效高程|缺测数据/.test(e.message) ? "当前剖面包含缺测数据，请调整线路或更换数据。" : "计算未完成，请检查输入：" + e.message;
     $("#radio-results").textContent = "";
     $("#terrain-understanding").textContent = "";
     clearSuccessNotice();
