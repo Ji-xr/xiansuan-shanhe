@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <base href="../">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#175b45">
+  <meta name="description" content="了解先算山河的链路仿真、地形分析、节点续航和方案对比，按步骤完成一次 LoRa 布点方案评估。">
+  <title>先算山河 · 网站介绍与使用说明</title>
+  <link rel="icon" href="./assets/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./index.html">
+      <img src="./assets/mark.svg" width="36" height="36" alt="">
+      <span>先算山河<small>LORA · ANALYSIS</small></span>
+    </a>
+    <nav aria-label="主导航">
+      <a href="./index.html">首页</a>
+      <a href="./pages/link.html">仿真工作台</a>
+      <a href="./pages/assessment.html">分析中心</a>
+      <a href="./pages/about.html">模型与方法</a>
+    </nav>
+  </header>
+  <main id="main">
+    <div class="product-subnav methods">
+      <p class="eyebrow">先算山河 · 使用指南</p>
+      <h1>网站介绍与使用说明</h1>
+      <p>《先算山河》是面向复杂地形生态监测的 LoRa 链路与节点续航仿真平台。它用于布点前的方案比较，帮助判断两点之间的通信余量、沿线地形遮挡，以及节点在不同工作周期下的理论续航。适用于山地、河谷、戈壁和草甸等场景的方案设计、教学和项目演示。</p>
+    </div>
+
+    <section class="section methods" aria-labelledby="guide-radio">
+      <h2 id="guide-radio">1. 设置通信参数</h2>
+      <p>进入「仿真工作台」，填写载波频率、发射功率、扩频因子（SF）、带宽和通信距离。需要时，在「高级参数」中调整数据包长度等设置。页面会随输入更新链路余量和发送时间。</p>
+      <p><strong>链路余量</strong>表示预计接收功率比接收灵敏度高多少。余量为负，说明按当前参数和传播假设，预计接收功率低于灵敏度门限。</p>
+      <p><a href="./pages/link.html">进入仿真工作台 →</a></p>
+    </section>
+
+    <section class="section methods" aria-labelledby="guide-terrain">
+      <h2 id="guide-terrain">2. 检查地形与通视</h2>
+      <h3>快速体验</h3>
+      <p>选择祁连山、嘉峪关、永靖刘家峡、定西黄土丘陵沟壑区或玛曲高寒草甸。加载场景后，可调整起终点、天线离地高度和采样间距。嘉峪关和永靖可点「查看原线路」，查看两套地形数据各自的核验结果。</p>
+      <h3>自定义线路</h3>
+      <p>两个节点都在当前栅格内时，直接修改坐标即可。超出覆盖范围时，切到「专业分析」，上传一份同时覆盖两端的单波段 WGS 84（EPSG:4326）GeoTIFF。文件缺少高程基准或单位时，按数据说明填写。重新打开页面后，需要重新选择本地文件。</p>
+      <h3>阅读结果</h3>
+      <p>剖面图显示沿线高程、天线视线和第一菲涅尔区边界。看到越界提示时，可按页面给出的覆盖范围调整坐标，或恢复场景默认线路。带有配套质量数据的线路会区分已核验点发现的遮挡和仍待核验的采样点。</p>
+      <p><a href="./pages/terrain.html">进入地形分析 →</a></p>
+    </section>
+
+    <section class="section methods" aria-labelledby="guide-energy">
+      <h2 id="guide-energy">3. 估算节点续航</h2>
+      <p>进入「续航与整机功耗」。快速估算时，可使用简化模型，输入电池容量、发送间隔和工作电流。需要细化时，在「设备配置」中选择参考硬件或自定义设备，再通过「工作周期」核对各阶段的时长与电流，最后在「能耗分析」查看每周期能耗、平均功率和理论续航，也可导出整机功耗 PNG。</p>
+      <p><a href="./pages/energy.html">进入功耗分析 →</a></p>
+    </section>
+
+    <section class="section methods" aria-labelledby="guide-compare">
+      <h2 id="guide-compare">4. 比较方案并导出报告</h2>
+      <ol>
+        <li>在工作台设好第一套参数，进入「分析中心」，点「保存当前为 A」。</li>
+        <li>回到工作台修改参数，再进入分析中心点「保存当前为 B」。</li>
+        <li>比较两套方案的链路余量、发送时间和续航估算。分析中心还提供参数敏感性、通信与能耗权衡及二维参数分析。</li>
+        <li>按需导出当前方案或 A/B 对比 PNG。点「生成综合报告」汇总通信、地形和功耗结果，再用「打印 / 保存 PDF」留存。</li>
+      </ol>
+      <p>A/B 方案保存在当前浏览器中。地形通视、链路预算和续航是三项独立计算，实际部署前需结合现场测试验证。</p>
+      <p><a href="./pages/assessment.html">进入分析中心 →</a> · <a href="./pages/about.html">查看模型与数据来源 →</a></p>
+    </section>
+  </main>
+  <footer><span>软件仿真原型｜结果非实地实测</span><a href="./index.html">返回首页</a></footer>
+</body>
+</html>
