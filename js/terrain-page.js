@@ -783,7 +783,7 @@ function calculate() {
           {
             label: "地形（含曲率凸起）m",
             data: points((x) => x.terrain),
-            borderColor: "#176448",
+            borderColor: "#175638",
             borderWidth: 2,
             pointRadius: 0,
           },

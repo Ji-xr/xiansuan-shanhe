@@ -1,0 +1,17 @@
+:root {
+  color-scheme: light;
+  --ink: #183528;
+  --muted: #486354;
+  --green-deep: #103c2a;
+  --green: #175638;
+  --green-hover: #0d422a;
+  --green-accent: #27774a;
+  --green-on-dark: #e9f7e9;
+  --green-focus-on-dark: #b4e5a9;
+  --line: #c8dfcd;
+  --line-strong: #7fa58a;
+  --green-soft: #d3ebd5;
+  --paper: #e5f3e6;
+  --wash: #f3faf3;
+  --surface: #fff;
+}
