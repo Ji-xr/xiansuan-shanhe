@@ -1,17 +1,19 @@
 :root {
   color-scheme: light;
-  --ink: #183528;
-  --muted: #486354;
-  --green-deep: #103c2a;
-  --green: #175638;
-  --green-hover: #0d422a;
-  --green-accent: #27774a;
-  --green-on-dark: #e9f7e9;
-  --green-focus-on-dark: #b4e5a9;
-  --line: #c8dfcd;
-  --line-strong: #7fa58a;
-  --green-soft: #d3ebd5;
-  --paper: #e5f3e6;
-  --wash: #f3faf3;
-  --surface: #fff;
+  --ink: #24342b;
+  --muted: #506356;
+  --green-deep: #173b32;
+  --green: #255749;
+  --green-accent: #336b56;
+  --green-on-dark: #faf1dd;
+  --green-focus-on-dark: #f3d59d;
+  --line: #cbd7c8;
+  --line-strong: #759181;
+  --green-soft: #dce9db;
+  --paper: #eaf1e6;
+  --wash: #f8f4ea;
+  --surface: #fffdf7;
+  --vermilion: #9c3d31;
+  --vermilion-hover: #7c3028;
+  --bronze: #a57b47;
 }

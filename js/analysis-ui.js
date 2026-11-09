@@ -18,8 +18,8 @@ export function mountAnalysis({sim,radio,powerForm,scenarios,comparison,reset,ge
   sim.append(root);
   if(document.documentElement.dataset.analysisView==='matrix')root.querySelector('.matrix-analysis').open=true;
   const axis=root.querySelector('#analysis-axis'),metric=root.querySelector('#analysis-metric');
-  const one=chart(root.querySelector('#sensitivity-chart'),'接收灵敏度 dBm','#175638');one.options.scales.x={type:'linear',title:{display:true,text:'参数值'}};
-  const charts={margin:chart(root.querySelector('#joint-margin'),'余量 dB','#175638'),toa:chart(root.querySelector('#joint-toa'),'发送时间 ms','#ad8030'),days:chart(root.querySelector('#joint-days'),'续航天数','#568795')};
+  const one=chart(root.querySelector('#sensitivity-chart'),'接收灵敏度 dBm','#255749');one.options.scales.x={type:'linear',title:{display:true,text:'参数值'}};
+  const charts={margin:chart(root.querySelector('#joint-margin'),'余量 dB','#255749'),toa:chart(root.querySelector('#joint-toa'),'发送时间 ms','#ad8030'),days:chart(root.querySelector('#joint-days'),'续航天数','#568795')};
   const syncRanges=()=>{for(const {numeric,slider} of ranges)if(numeric.value!==''&&numeric.validity.valid)slider.value=numeric.value;};
   function update(){try{
     const p=getParams(),rows=sweep(p,axis.value),sf=joint(p),grid=sfDistanceGrid(p),m=METRICS[metric.value];
