@@ -1,5 +1,11 @@
 @import "./theme.css";
 
+#sys-timeline table { min-width: 820px; }
+#sys-timeline th, #sys-timeline td { vertical-align: top; }
+#sys-timeline td:nth-child(n+2):nth-child(-n+4),
+#sys-timeline td:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+#sys-timeline tfoot td { color: var(--green); background: var(--paper); font-weight: 600; }
+
 :root{--radius:14px;font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;color:var(--ink);background:var(--wash);accent-color:var(--green);font-synthesis:none}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;font-size:15px;line-height:1.8}a{color:var(--green);text-decoration:none}a:hover{text-decoration:underline}a:focus-visible,summary:focus-visible{outline:3px solid var(--green-accent);outline-offset:5px}img{display:block;max-width:100%;height:auto}p{margin:0 0 16px}h1,h2,h3{line-height:1.4;margin:0 0 16px}h2{font-size:27px}h3{font-size:18px}code{overflow-wrap:anywhere;font-size:.92em}section{scroll-margin-top:24px}.skip-link{position:fixed;top:-100px;left:16px;z-index:10;background:#fff;padding:10px}.skip-link:focus{top:8px}
 .site-header,main,footer{max-width:1200px;margin:auto;padding-inline:36px}.site-header {
